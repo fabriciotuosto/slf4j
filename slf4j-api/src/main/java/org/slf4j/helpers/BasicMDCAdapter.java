@@ -44,7 +44,11 @@ import java.util.Set;
  */
 public class BasicMDCAdapter implements MDCAdapter {
 
-  private InheritableThreadLocal inheritableThreadLocal = new InheritableThreadLocal();
+  private InheritableThreadLocal inheritableThreadLocal = new InheritableThreadLocal() {
+	  protected Object initialValue() {
+		  return new HashMap();
+	  };
+  };
 
   /**
    * Put a context value (the <code>val</code> parameter) as identified with
@@ -62,11 +66,7 @@ public class BasicMDCAdapter implements MDCAdapter {
     if (key == null) {
       throw new IllegalArgumentException("key cannot be null");
     }
-    HashMap map = (HashMap) inheritableThreadLocal.get();
-    if (map == null) {
-      map = new HashMap();
-      inheritableThreadLocal.set(map);
-    }
+    Map map = (HashMap) inheritableThreadLocal.get();
     map.put(key, val);
   }
 
@@ -74,22 +74,16 @@ public class BasicMDCAdapter implements MDCAdapter {
    * Get the context identified by the <code>key</code> parameter.
    */
   public String get(String key) {
-    HashMap hashMap = (HashMap) inheritableThreadLocal.get();
-    if ((hashMap != null) && (key != null)) {
-      return (String) hashMap.get(key);
-    } else {
-      return null;
-    }
+    Map map = (Map) inheritableThreadLocal.get();
+    return (String) map.get(key);
   }
 
   /**
    * Remove the the context identified by the <code>key</code> parameter.
    */
   public void remove(String key) {
-    HashMap map = (HashMap) inheritableThreadLocal.get();
-    if (map != null) {
-      map.remove(key);
-    }
+    Map map = (Map) inheritableThreadLocal.get();
+    map.remove(key);
   }
 
   /**
@@ -97,12 +91,10 @@ public class BasicMDCAdapter implements MDCAdapter {
    */
   public void clear() {
     HashMap hashMap = (HashMap) inheritableThreadLocal.get();
-    if (hashMap != null) {
       hashMap.clear();
       // the InheritableThreadLocal.remove method was introduced in JDK 1.5
       // Thus, invoking clear() on previous JDK's will fail
       inheritableThreadLocal.remove();
-    }
   }
 
   /**
@@ -113,11 +105,7 @@ public class BasicMDCAdapter implements MDCAdapter {
    */
   public Set getKeys() {
     HashMap hashMap = (HashMap) inheritableThreadLocal.get();
-    if (hashMap != null) {
-      return hashMap.keySet();
-    } else {
-      return null;
-    }
+    return hashMap.keySet();
   }
   /**
    * Return a copy of the current thread's context map. 
@@ -126,22 +114,13 @@ public class BasicMDCAdapter implements MDCAdapter {
    */
   public Map getCopyOfContextMap() {
     HashMap hashMap = (HashMap) inheritableThreadLocal.get();
-    if (hashMap != null) {
-      return new HashMap(hashMap);
-    } else {
-      return null;
-    }
+    return new HashMap(hashMap);
   }
 
   public void setContextMap(Map contextMap) {
     HashMap hashMap = (HashMap) inheritableThreadLocal.get();
-    if (hashMap != null) {
-      hashMap.clear();
-      hashMap.putAll(contextMap);
-    } else {
-      hashMap = new HashMap(contextMap);
-      inheritableThreadLocal.set(hashMap);
-    }
+    hashMap.clear();
+    hashMap.putAll(contextMap);
   }
 
 }
